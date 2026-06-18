@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Libro - Biblion</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="mis-libros.html" class="nav-logo">Biblion</a>
+                <ul class="nav-menu">
+                    <li><a href="mis-libros.html" class="nav-link">Mis Libros</a></li>
+                    <li><a href="add-book.html" class="nav-link active">+ Agregar Libro</a></li>
+                    <li><button id="logout-btn" class="nav-link" style="background: var(--accent-color); color: white;">Cerrar Sesión</button></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="add-book-container">
+            <h1>Agregar Nuevo Libro</h1>
+            <p class="subtitle">Comparte conocimiento con la comunidad</p>
+            
+            <div id="message-container" style="margin-bottom: 1rem;"></div>
+            
+            <form id="add-book-form" class="add-book-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="title">Título del Libro *</label>
+                        <input type="text" id="title" name="title" required placeholder="Ej: Cien años de soledad">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="author">Autor *</label>
+                        <input type="text" id="author" name="author" required placeholder="Ej: Gabriel García Márquez">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Categoría *</label>
+                        <select id="category" name="category" required>
+                            <option value="">Selecciona una categoría</option>
+                            <option value="novela">Novela</option>
+                            <option value="ciencia-ficcion">Ciencia Ficción</option>
+                            <option value="fantasia">Fantasía</option>
+                            <option value="historia">Historia</option>
+                            <option value="biografia">Biografía</option>
+                            <option value="tecnologia">Tecnología</option>
+                            <option value="filosofia">Filosofía</option>
+                            <option value="poesia">Poesía</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="year">Año de Publicación (opcional)</label>
+                        <input type="number" id="year" name="year" min="1000" max="2024" placeholder="Ej: 1967">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Descripción *</label>
+                    <textarea id="description" name="description" required rows="5" placeholder="Descripción del libro..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="estado">Estado</label>
+                    <input type="text" id="estado" name="estado" value="disponible" placeholder="disponible">
+                </div>
+
+                <div class="form-group">
+                    <label for="pdf">Archivo PDF (opcional)</label>
+                    <div class="file-input-container">
+                        <input type="file" id="pdf" name="pdf" accept=".pdf">
+                        <small>Formatos aceptados: PDF (máx. 50MB)</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cover">Imagen de Portada (opcional)</label>
+                    <div class="file-input-container">
+                        <input type="file" id="cover" name="cover" accept="image/*">
+                        <small>Formatos aceptados: JPG, PNG, GIF (máx. 5MB)</small>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Publicar Libro</button>
+                    <button type="reset" class="btn btn-secondary">Limpiar Formulario</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Logout
+        document.getElementById('logout-btn')?.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('guest');
+            window.location.href = 'index.html';
+        });
+
+        // Mostrar mensaje informativo sin deshabilitar el botón
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            const isGuest = localStorage.getItem('guest');
+            const messageContainer = document.getElementById('message-container');
+            
+            if (!token || isGuest === 'true') {
+                messageContainer.innerHTML = `
+                    <div style="background: #fff3cd; color: #856404; padding: 1rem; border-radius: 5px; margin-bottom: 1rem; border: 1px solid #ffeeba;">
+                        <strong>⚠️ Modo invitado:</strong> Puedes agregar libros, pero si no inicias sesión, <strong>no podrás editarlos o eliminarlos después</strong>.
+                        <a href="login.html" style="color: #856404; font-weight: bold; text-decoration: underline; margin-left: 0.5rem;">Iniciar Sesión</a>
+                    </div>
+                `;
+            } else {
+                messageContainer.innerHTML = `
+                    <div style="background: #d4edda; color: #155724; padding: 1rem; border-radius: 5px; margin-bottom: 1rem; border: 1px solid #c3e6cb;">
+                        <strong>✅ Sesión iniciada:</strong> Tus libros se guardarán en tu cuenta.
+                    </div>
+                `;
+            }
+        });
+    </script>
+    <script src="endpoints/AddBook-endpoint.js"></script>
+</body>
+</html>

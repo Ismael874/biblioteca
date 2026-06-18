@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del Libro - Biblion</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="#" id="home-link" class="nav-logo">Biblion</a>
+                <ul class="nav-menu" id="nav-menu">
+                    <!-- El menú se llenará dinámicamente -->
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div id="book-detail-container" class="book-detail-container">
+            <!-- Los detalles del libro se cargarán dinámicamente -->
+        </div>
+    </main>
+
+    <script>
+        // Determinar tipo de usuario y construir menú
+        const token = localStorage.getItem('token');
+        const isGuest = localStorage.getItem('guest');
+        
+        let homeLink = 'index.html';
+        let menuHTML = '';
+
+        if (token && isGuest !== 'true') {
+            // Usuario logueado
+            homeLink = 'mis-libros.html';
+            menuHTML = `
+                <li><a href="mis-libros.html" class="nav-link">Mis Libros</a></li>
+                <li><a href="add-book.html" class="nav-link">+ Agregar Libro</a></li>
+                <li><button id="logout-btn" class="nav-link" style="background: var(--accent-color); color: white;">Cerrar Sesión</button></li>
+            `;
+        } else if (isGuest === 'true') {
+            // Invitado
+            homeLink = 'invitado.html';
+            menuHTML = `
+                <li><a href="invitado.html" class="nav-link active">Inicio</a></li>
+                <li><a href="login.html" class="nav-link">Iniciar Sesión</a></li>
+                <li><a href="register.html" class="nav-link">Registrarse</a></li>
+            `;
+        } else {
+            // No logueado
+            menuHTML = `
+                <li><a href="index.html" class="nav-link">Inicio</a></li>
+                <li><a href="login.html" class="nav-link">Iniciar Sesión</a></li>
+                <li><a href="register.html" class="nav-link">Registrarse</a></li>
+                <li><a href="invitado.html" class="nav-link guest-btn">Entrar como Invitado</a></li>
+            `;
+        }
+
+        // Aplicar menú
+        document.getElementById('home-link').href = homeLink;
+        document.getElementById('nav-menu').innerHTML = menuHTML;
+
+        // Logout si existe el botón
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'logout-btn') {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                localStorage.removeItem('guest');
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Cargar detalle del libro
+        async function loadBookDetail() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookId = urlParams.get('id');
+            
+            if (!bookId) {
+                window.location.href = homeLink;
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://biblionsoftware.onrender.com/api/book/${bookId}`);
+                const book = await response.json();
+                
+                const container = document.getElementById('book-detail-container');
+                container.innerHTML = `
+                    <div class="book-detail">
+                        <img src="assets/default-cover.jpg" alt="${book.title}" class="book-detail-cover">
+                        <div class="book-detail-info">
+                            <h1>${book.title}</h1>
+                            <div class="book-detail-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">Autor</span>
+                                    <span class="meta-value">${book.author}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Categoría</span>
+                                    <span class="meta-value">${book.categoria}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Estado</span>
+                                    <span class="meta-value">${book.estado || 'disponible'}</span>
+                                </div>
+                            </div>
+                            <div class="book-description">
+                                <h3>Descripción</h3>
+                                <p>${book.description || 'Sin descripción'}</p>
+                            </div>
+                            <div class="book-actions">
+                                <button onclick="alert('Funcionalidad de PDF pendiente')" class="btn btn-primary">Abrir PDF</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Guardar en historial (solo para usuarios logueados)
+                if (token && isGuest !== 'true') {
+                    let history = JSON.parse(localStorage.getItem('bookHistory') || '[]');
+                    history = history.filter(b => b.id !== bookId);
+                    history.unshift({
+                        id: bookId,
+                        title: book.title,
+                        author: book.author,
+                        viewedAt: new Date().toISOString()
+                    });
+                    history = history.slice(0, 10);
+                    localStorage.setItem('bookHistory', JSON.stringify(history));
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('book-detail-container').innerHTML = `
+                    <div class="empty-state">
+                        <p>Error al cargar el libro</p>
+                        <a href="${homeLink}" class="btn btn-primary">Volver</a>
+                    </div>
+                `;
+            }
+        }
+
+        loadBookDetail();
+    </script>
+</body>
+</html>

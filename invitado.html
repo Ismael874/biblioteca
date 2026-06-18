@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblion - Modo Invitado</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .guest-banner {
+            background: var(--warning-color);
+            color: white;
+            text-align: center;
+            padding: 0.5rem;
+            font-weight: bold;
+        }
+        .guest-banner a {
+            color: white;
+            text-decoration: underline;
+        }
+        .features {
+            padding: 4rem 2rem;
+            background: #f8f9fa;
+        }
+        .features h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 3rem;
+            font-size: 2.5rem;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .feature-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        .feature-card p {
+            color: #666;
+        }
+        .cta-section {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        .cta-section h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .cta-section p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        .cta-buttons a {
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+        .cta-buttons a:hover {
+            transform: translateY(-3px);
+        }
+        .btn-register {
+            background: white;
+            color: var(--primary-color);
+        }
+        .btn-login {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+    </style>
+</head>
+<body>
+    <div class="guest-banner">
+        ⚡ Estás en modo invitado - <a href="login.html">Inicia sesión</a> para acceder a todas las funciones (agregar, editar, eliminar libros)
+    </div>
+
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="invitado.html" class="nav-logo">Biblion</a>
+                
+                <!-- Barra de búsqueda -->
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Buscar libros por título, autor o categoría..." class="search-input">
+                    <div id="search-results" class="search-results"></div>
+                </div>
+
+                <ul class="nav-menu">
+                    <li><a href="invitado.html" class="nav-link active">Inicio</a></li>
+                    <li><a href="login.html" class="nav-link">Iniciar Sesión</a></li>
+                    <li><a href="register.html" class="nav-link">Registrarse</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="hero-content">
+                <h1>Explora Biblion</h1>
+                <p class="hero-subtitle">Modo Invitado</p>
+                <p class="hero-description">Puedes buscar y ver todos los libros disponibles. Para agregar, editar o eliminar libros, necesitas una cuenta.</p>
+            </div>
+        </section>
+
+        <!-- SECCIÓN DE CARACTERÍSTICAS (la imagen que mostraste) -->
+        <section class="features">
+            <h2>¿Qué puedes hacer en Biblion?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <h3>Explorar Libros</h3>
+                    <p>Busca y descubre miles de títulos de todas las categorías. Filtra por autor, género o año.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📖</div>
+                    <h3>Leer Online</h3>
+                    <p>Visualiza libros directamente en tu navegador sin necesidad de descargar. Interfaz cómoda y limpia.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">⬇️</div>
+                    <h3>Descargar PDFs</h3>
+                    <p>Accede a los libros en formato PDF para leer sin conexión. Lleva tu biblioteca a todas partes.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📤</div>
+                    <h3>Compartir Conocimiento</h3>
+                    <p>Contribuye añadiendo nuevos libros a la biblioteca. Ayuda a otros lectores a descubrir nuevas obras.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de libros disponibles -->
+        <section class="recent-books">
+            <h2>Libros Disponibles</h2>
+            <div id="recent-books-grid" class="books-grid">
+                <!-- Los libros se cargarán dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Call to Action para registrarse -->
+        <section class="cta-section">
+            <div class="container">
+                <h2>¿Quieres más funciones?</h2>
+                <p>Regístrate gratis y podrás agregar tus propios libros, llevar un historial de lectura y mucho más.</p>
+                <div class="cta-buttons">
+                    <a href="register.html" class="btn-register">Crear Cuenta Gratis</a>
+                    <a href="login.html" class="btn-login">Iniciar Sesión</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Biblion - Biblioteca Digital. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+        // Función de búsqueda y carga de libros
+        let searchTimeout;
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Cargar libros
+            try {
+                const response = await fetch('https://biblionsoftware.onrender.com/api/book');
+                const books = await response.json();
+                
+                const grid = document.getElementById('recent-books-grid');
+                grid.innerHTML = '';
+                
+                if (books && books.length > 0) {
+                    books.forEach(book => {
+                        const card = document.createElement('div');
+                        card.className = 'book-card';
+                        card.onclick = () => window.location.href = `book.html?id=${book.id}`;
+                        card.innerHTML = `
+                            <img src="assets/default-cover.jpg" alt="${book.title}" class="book-cover">
+                            <div class="book-info">
+                                <h3>${book.title || 'Sin título'}</h3>
+                                <p>${book.author || 'Sin autor'}</p>
+                                <p>${book.categoria || 'Sin categoría'}</p>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+                } else {
+                    grid.innerHTML = '<p style="text-align: center; color: #666;">No hay libros disponibles</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('recent-books-grid').innerHTML = 
+                    '<p style="text-align: center; color: #666;">Error al cargar los libros</p>';
+            }
+
+            // Búsqueda
+            const searchInput = document.getElementById('search-input');
+            const searchResults = document.getElementById('search-results');
+
+            if (searchInput && searchResults) {
+                searchInput.addEventListener('input', (e) => {
+                    const query = e.target.value.trim();
+                    
+                    clearTimeout(searchTimeout);
+                    
+                    if (query.length < 2) {
+                        searchResults.style.display = 'none';
+                        return;
+                    }
+                    
+                    searchTimeout = setTimeout(async () => {
+                        try {
+                            const response = await fetch(`https://biblionsoftware.onrender.com/api/book`);
+                            const books = await response.json();
+                            
+                            const filtered = books.filter(book => 
+                                book.title?.toLowerCase().includes(query.toLowerCase()) ||
+                                book.author?.toLowerCase().includes(query.toLowerCase()) ||
+                                book.categoria?.toLowerCase().includes(query.toLowerCase())
+                            );
+                            
+                            displaySearchResults(filtered, searchResults);
+                        } catch (error) {
+                            console.error('Error en búsqueda:', error);
+                        }
+                    }, 300);
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                        searchResults.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        function displaySearchResults(books, container) {
+            if (books.length === 0) {
+                container.innerHTML = '<div class="search-result-item">No se encontraron libros</div>';
+            } else {
+                container.innerHTML = books.slice(0, 5).map(book => `
+                    <div class="search-result-item" onclick="window.location.href='book.html?id=${book.id}'">
+                        <h4>${book.title}</h4>
+                        <p>${book.author} - ${book.categoria}</p>
+                    </div>
+                `).join('');
+            }
+            container.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

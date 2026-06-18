@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verificar Token</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        pre { background: #f4f4f4; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Verificar Token de Autenticación</h1>
+    
+    <div id="info"></div>
+    
+    <button onclick="checkToken()">Verificar Token Actual</button>
+    <button onclick="clearStorage()">Limpiar Storage</button>
+    <button onclick="testLogin()">Probar Login Manual</button>
+    
+    <div id="result" style="margin-top: 20px;"></div>
+
+    <script>
+        function showInfo() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            const guest = localStorage.getItem('guest');
+            
+            document.getElementById('info').innerHTML = `
+                <h3>Estado Actual:</h3>
+                <p><strong>Token:</strong> ${token ? token.substring(0, 20) + '...' : '❌ No hay token'}</p>
+                <p><strong>User:</strong> ${user || '❌ No hay usuario'}</p>
+                <p><strong>Guest:</strong> ${guest || '❌ No es invitado'}</p>
+            `;
+        }
+        
+        async function checkToken() {
+            const token = localStorage.getItem('token');
+            const result = document.getElementById('result');
+            
+            if (!token) {
+                result.innerHTML = '<p class="error">❌ No hay token guardado</p>';
+                return;
+            }
+            
+            result.innerHTML = '<p>Verificando token...</p>';
+            
+            try {
+                const response = await fetch('https://biblionsoftware.onrender.com/api/book', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const text = await response.text();
+                
+                result.innerHTML = `
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>¿Token válido?</strong> ${response.ok ? '✅ Sí' : '❌ No'}</p>
+                    <p><strong>Respuesta:</strong></p>
+                    <pre>${text.substring(0, 500)}</pre>
+                `;
+            } catch (error) {
+                result.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+        
+        function clearStorage() {
+            localStorage.clear();
+            showInfo();
+            document.getElementById('result').innerHTML = '<p>Storage limpiado</p>';
+        }
+        
+        async function testLogin() {
+            const email = prompt('Email:');
+            const password = prompt('Password:');
+            
+            if (!email || !password) return;
+            
+            try {
+                const response = await fetch('https://biblionsoftware.onrender.com/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const text = await response.text();
+                
+                if (response.ok) {
+                    localStorage.setItem('token', text);
+                    localStorage.setItem('user', JSON.stringify({ email }));
+                    showInfo();
+                    alert('✅ Login exitoso - Token guardado');
+                } else {
+                    alert('❌ Error: ' + text);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        showInfo();
+    </script>
+</body>
+</html>

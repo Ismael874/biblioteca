@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Libros - Biblion</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/mis-libros.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="mis-libros.html" class="nav-logo">Biblion</a>
+                
+                <!-- Barra de búsqueda -->
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Buscar libros..." class="search-input">
+                    <div id="search-results" class="search-results"></div>
+                </div>
+
+                <ul class="nav-menu">
+                    <li><a href="mis-libros.html" class="nav-link active">Mis Libros</a></li>
+                    <li><a href="add-book.html" class="nav-link">+ Agregar Libro</a></li>
+                    <li><button id="logout-btn" class="nav-link" style="background: var(--accent-color); color: white;">Cerrar Sesión</button></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="admin-container">
+            <div class="user-info" id="user-info">
+                <!-- Se llenará con JS -->
+            </div>
+
+            <div class="admin-header">
+                <h1>Mis Libros</h1>
+                <a href="add-book.html" class="btn-add">+ Agregar Nuevo Libro</a>
+            </div>
+
+            <!-- Mensajes de confirmación -->
+            <div id="message-container"></div>
+
+            <!-- SECCIÓN DE HISTORIAL -->
+            <div class="search-section">
+                <h2>📖 Historial de Lectura</h2>
+                <div id="history-grid" class="books-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); margin-bottom: 2rem;">
+                    <!-- Historial cargado dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Tabla de mis libros -->
+            <h2>📚 Mis Libros</h2>
+            <div id="books-list">
+                <div class="empty-state" id="loading-state">
+                    <p>Cargando tus libros...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal para editar libro -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeEditModal()">&times;</span>
+            <h2>Editar Libro</h2>
+            <form id="edit-form" class="auth-form">
+                <input type="hidden" id="edit-book-id">
+                
+                <div class="form-group">
+                    <label for="edit-title">Título</label>
+                    <input type="text" id="edit-title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-author">Autor</label>
+                    <input type="text" id="edit-author" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-category">Categoría</label>
+                    <select id="edit-category" required>
+                        <option value="novela">Novela</option>
+                        <option value="ciencia-ficcion">Ciencia Ficción</option>
+                        <option value="fantasia">Fantasía</option>
+                        <option value="historia">Historia</option>
+                        <option value="biografia">Biografía</option>
+                        <option value="tecnologia">Tecnología</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-estado">Estado</label>
+                    <input type="text" id="edit-estado" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script principal (type="module" para usar imports) -->
+    <script type="module" src="js/mis-libros.js"></script>
+</body>
+</html>
