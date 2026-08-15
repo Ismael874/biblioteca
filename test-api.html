@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API - Biblion</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 2rem; background: #f5f5f5; }
+        h1, h2 { color: #333; }
+        .test-section { background: white; padding: 2rem; margin: 1rem 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        button { padding: 0.5rem 1rem; margin: 0.5rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #5568d3; }
+        .log { background: #f9f9f9; padding: 1rem; border-radius: 4px; max-height: 300px; overflow-y: auto; font-size: 0.9rem; font-family: monospace; margin-top: 1rem; }
+        .success { color: #27ae60; }
+        .error { color: #e74c3c; }
+        .info { color: #3498db; }
+        input { padding: 0.5rem; margin: 0.5rem 0; width: 100%; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
+        .status { padding: 1rem; margin: 1rem 0; border-radius: 4px; }
+        .status.ok { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de API - Biblion</h1>
+
+    <div class="test-section">
+        <h2>1. Estado del Servidor</h2>
+        <button onclick="testHealth()">Verificar Salud de API</button>
+        <div id="health-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Autenticación</h2>
+        <input type="email" id="test-email" placeholder="correo@ejemplo.com" value="test@example.com">
+        <input type="password" id="test-password" placeholder="contraseña" value="password123">
+        <input type="text" id="test-name" placeholder="Nombre" value="Test User">
+        <button onclick="testRegister()">Registrarse</button>
+        <button onclick="testLogin()">Iniciar Sesión</button>
+        <button onclick="testGetMe()">Obtener Perfil</button>
+        <div id="auth-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Información Almacenada</h2>
+        <button onclick="showStoredData()">Mostrar Datos Locales</button>
+        <button onclick="clearStoredData()">Limpiar Datos</button>
+        <div id="storage-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Libros</h2>
+        <button onclick="testGetAllBooks()">Cargar Todos los Libros</button>
+        <button onclick="testGetBook()">Obtener Detalles Libro (ID: test)</button>
+        <div id="books-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Compras y Alquileres</h2>
+        <input type="text" id="test-book-id" placeholder="ID del libro" value="test-book">
+        <button onclick="testPurchase()">Comprar Libro</button>
+        <button onclick="testRent()">Alquilar Libro (7 días)</button>
+        <button onclick="testGetPurchases()">Ver mis Compras</button>
+        <button onclick="testGetRentals()">Ver mis Alquileres</button>
+        <div id="purchase-log" class="log"></div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        function log(elementId, message, type = 'info') {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const time = new Date().toLocaleTimeString();
+            const cls = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            const line = `<div class="${cls}">[${time}] ${message}</div>`;
+            el.innerHTML = line + el.innerHTML;
+        }
+
+        async function testHealth() {
+            try {
+                const response = await fetch('http://localhost:4000/api/health');
+                const data = await response.json();
+                log('health-log', `✅ API en línea: ${JSON.stringify(data)}`, 'success');
+            } catch (e) {
+                log('health-log', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function testRegister() {
+            try {
+                const name = document.getElementById('test-name').value;
+                const email = document.getElementById('test-email').value;
+                const password = document.getElementById('test-password').value;
+                const result = await window.BiblionAPI.registerUser(name, email, '', password);
+                log('auth-log', `✅ Registro exitoso. Token: ${result.token.substring(0, 20)}...`, 'success');
+            } catch (e) {
+                log('auth-log', `❌ Error en registro: ${e.message}`, 'error');
+            }
+        }
+
+        async function testLogin() {
+            try {
+                const email = document.getElementById('test-email').value;
+                const password = document.getElementById('test-password').value;
+                const result = await window.BiblionAPI.loginUser(email, password);
+                log('auth-log', `✅ Login exitoso. Token: ${result.token.substring(0, 20)}...`, 'success');
+            } catch (e) {
+                log('auth-log', `❌ Error en login: ${e.message}`, 'error');
+            }
+        }
+
+        async function testGetMe() {
+            try {
+                const user = await window.BiblionAPI.getCurrentUserProfile();
+                log('auth-log', `✅ Perfil obtenido: ${user.name} (${user.email})`, 'success');
+            } catch (e) {
+                log('auth-log', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        function showStoredData() {
+            const token = window.BiblionAPI.getToken();
+            const user = window.BiblionAPI.getCurrentUser();
+            log('storage-log', `Token: ${token ? token.substring(0, 30) + '...' : 'No almacenado'}`, 'info');
+            log('storage-log', `Usuario: ${user ? JSON.stringify(user) : 'No almacenado'}`, 'info');
+        }
+
+        function clearStoredData() {
+            window.BiblionAPI.clearToken();
+            window.BiblionAPI.setCurrentUser(null);
+            log('storage-log', `✅ Datos borrados`, 'success');
+        }
+
+        async function testGetAllBooks() {
+            try {
+                const books = await window.BiblionAPI.getAllBooks();
+                log('books-log', `✅ Se cargaron ${books.length} libros`, 'success');
+                if (books.length > 0) {
+                    log('books-log', `Primer libro: ${books[0].title} por ${books[0].author}`, 'info');
+                }
+            } catch (e) {
+                log('books-log', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function testGetBook() {
+            try {
+                const books = await window.BiblionAPI.getAllBooks();
+                if (books.length === 0) {
+                    log('books-log', `⚠️ No hay libros para probar`, 'info');
+                    return;
+                }
+                const book = books[0];
+                const details = await window.BiblionAPI.getBookById(book.id);
+                log('books-log', `✅ Detalles del libro: ${details.title}`, 'success');
+            } catch (e) {
+                log('books-log', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function testPurchase() {
+            try {
+                const bookId = document.getElementById('test-book-id').value || 'test-book';
+                const result = await window.BiblionAPI.purchaseBook(bookId);
+                log('purchase-log', `✅ Compra exitosa: ${result.purchaseId}`, 'success');
+            } catch (e) {
+                log('purchase-log', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function testRent() {
+            try {
+                const bookId = document.getElementById('test-book-id').value || 'test-book';
+                const result = await window.BiblionAPI.rentBook(bookId, 7);
+                log('purchase-log', `✅ Alquiler exitoso hasta ${result.expiresAt}`, 'success');
+            } catch (e) {
+                log('purchase-log', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function testGetPurchases() {
+            try {
+                const user = await window.BiblionAPI.getCurrentUserProfile();
+                const purchases = await window.BiblionAPI.getUserPurchases(user.id);
+                log('purchase-log', `✅ Compras cargadas: ${purchases.length} total`, 'success');
+            } catch (e) {
+                log('purchase-log', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function testGetRentals() {
+            try {
+                const user = await window.BiblionAPI.getCurrentUserProfile();
+                const rentals = await window.BiblionAPI.getUserRentals(user.id);
+                log('purchase-log', `✅ Alquileres cargados: ${rentals.length} total`, 'success');
+            } catch (e) {
+                log('purchase-log', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

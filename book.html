@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del Libro - Biblion</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="#" id="home-link" class="nav-logo">Biblion</a>
+                <ul class="nav-menu" id="nav-menu">
+                    <!-- El menú se llenará dinámicamente -->
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div id="book-detail-container" class="book-detail-container">
+            <!-- Los detalles del libro se cargarán dinámicamente -->
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        // Determinar tipo de usuario y construir menú
+        const token = window.BiblionAPI?.getToken();
+        const user = window.BiblionAPI?.getCurrentUser();
+        
+        let homeLink = 'index.html';
+        let menuHTML = '';
+
+        if (token && user) {
+            // Usuario logueado
+            homeLink = 'mis-libros.html';
+            menuHTML = `
+                <li><a href="mis-libros.html" class="nav-link">Mis Libros</a></li>
+                <li><a href="add-book.html" class="nav-link">+ Agregar Libro</a></li>
+                ${window.BiblionAPI.isAdmin() ? '<li><a href="admin.html" class="nav-link">Panel Admin</a></li>' : ''}
+                <li><button id="logout-btn" class="nav-link" style="background: var(--accent-color); color: white;">Cerrar Sesión</button></li>
+            `;
+        } else {
+            // No logueado
+            menuHTML = `
+                <li><a href="index.html" class="nav-link">Inicio</a></li>
+                <li><a href="login.html" class="nav-link">Iniciar Sesión</a></li>
+                <li><a href="register.html" class="nav-link">Registrarse</a></li>
+                <li><a href="invitado.html" class="nav-link guest-btn">Entrar como Invitado</a></li>
+            `;
+        }
+
+        // Aplicar menú
+        document.getElementById('home-link').href = homeLink;
+        document.getElementById('nav-menu').innerHTML = menuHTML;
+
+        // Logout si existe el botón
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'logout-btn') {
+                window.BiblionAPI?.logout();
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Cargar detalle del libro
+        async function loadBookDetail() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookId = urlParams.get('id');
+            
+            if (!bookId) {
+                window.location.href = homeLink;
+                return;
+            }
+
+            try {
+                const book = await window.BiblionAPI.getBookById(bookId);
+                if (!book) {
+                    document.getElementById('book-detail-container').innerHTML = `
+                        <div class="empty-state">
+                            <p>Libro no encontrado</p>
+                            <a href="${homeLink}" class="btn btn-primary">Volver</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const coverUrl = window.BiblionAPI.getBookCover(bookId);
+                const priceText = book.isFree ? 'Gratis' : '$' + book.price;
+
+                let hasAccess = book.isFree || (user && book.ownerId === user.id);
+                if (!hasAccess && user) {
+                    try {
+                        const [purchases, rentals] = await Promise.all([
+                            window.BiblionAPI.getUserPurchases(user.id),
+                            window.BiblionAPI.getUserRentals(user.id)
+                        ]);
+                        const purchased = purchases.some(p => p.bookId === bookId);
+                        const rented = rentals.some(r => r.bookId === bookId && r.status === 'active');
+                        hasAccess = purchased || rented;
+                    } catch (error) {
+                        console.error('Error checking purchase/rental status:', error);
+                    }
+                }
+
+                let actionButtons = '';
+                if (hasAccess) {
+                    // Gratis, propietario, ya comprado, o alquiler activo
+                    actionButtons = `
+                        <button onclick="downloadPDF('${bookId}')" class="btn btn-primary">⬇️ Descargar PDF</button>
+                    `;
+                } else {
+                    // Si no es gratis y no es el propietario
+                    actionButtons = `
+                        <button onclick="purchaseBook('${bookId}')" class="btn btn-primary">💳 Comprar - ${priceText}</button>
+                        <button onclick="rentBook('${bookId}')" class="btn btn-secondary">🔄 Alquilar 7 días</button>
+                    `;
+                }
+
+                const container = document.getElementById('book-detail-container');
+                container.innerHTML = `
+                    <div class="book-detail">
+                        <img src="${coverUrl}" alt="${book.title}" class="book-detail-cover" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22300%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23999%22%3EPortada%3C/text%3E%3C/svg%3E'">
+                        <div class="book-detail-info">
+                            <h1>${book.title}</h1>
+                            <div class="book-detail-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">Autor</span>
+                                    <span class="meta-value">${book.author}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Categoría</span>
+                                    <span class="meta-value">${book.categoria}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Precio</span>
+                                    <span class="meta-value">${priceText}</span>
+                                </div>
+                            </div>
+                            <div class="book-description">
+                                <h3>Descripción</h3>
+                                <p>${book.description || 'Sin descripción'}</p>
+                            </div>
+                            <div class="book-actions">
+                                ${actionButtons}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading book:', error);
+                document.getElementById('book-detail-container').innerHTML = `
+                    <div class="empty-state">
+                        <p>Error al cargar el libro: ${error.message}</p>
+                        <a href="${homeLink}" class="btn btn-primary">Volver</a>
+                    </div>
+                `;
+            }
+        }
+
+        window.downloadPDF = async (bookId) => {
+            try {
+                const pdfUrl = window.BiblionAPI.getBookPdf(bookId);
+                window.open(pdfUrl, '_blank');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        };
+
+        window.purchaseBook = async (bookId) => {
+            if (!user) {
+                alert('Debes iniciar sesión para comprar');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            try {
+                await window.BiblionAPI.purchaseBook(bookId);
+                alert('✅ Libro comprado correctamente');
+                loadBookDetail();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        };
+
+        window.rentBook = async (bookId) => {
+            if (!user) {
+                alert('Debes iniciar sesión para alquilar');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            try {
+                await window.BiblionAPI.rentBook(bookId, 7);
+                alert('✅ Libro alquilado por 7 días');
+                loadBookDetail();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        };
+
+        loadBookDetail();
+    </script>
+</body>
+</html>

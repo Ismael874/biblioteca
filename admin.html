@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Biblion</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/mis-libros.css">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        .stat-card .stat-label {
+            color: #666;
+        }
+        .db-status-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.9rem 1.2rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-weight: bold;
+        }
+        .db-status-bar.ok {
+            background: #d4edda;
+            color: #155724;
+        }
+        .db-status-bar.fail {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .db-status-bar.checking {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        .db-status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .db-status-bar.ok .db-status-dot { background: #27ae60; }
+        .db-status-bar.fail .db-status-dot { background: #e74c3c; }
+        .db-status-bar.checking .db-status-dot { background: #999; }
+        .db-status-detail {
+            font-weight: normal;
+            font-size: 0.85rem;
+            opacity: 0.85;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="mis-libros.html" class="nav-logo">Biblion</a>
+                <ul class="nav-menu">
+                    <li><a href="mis-libros.html" class="nav-link">Mis Libros</a></li>
+                    <li><a href="admin.html" class="nav-link active">Panel Admin</a></li>
+                    <li><button id="logout-btn" class="nav-link" style="background: var(--accent-color); color: white;">Cerrar Sesión</button></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1>Panel de Administración</h1>
+            </div>
+
+            <div id="message-container"></div>
+
+            <div id="db-status-bar" class="db-status-bar checking">
+                <span class="db-status-dot"></span>
+                <span id="db-status-text">Verificando conexión a la base de datos...</span>
+            </div>
+
+            <h2>Estado de la Base de Datos</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-users">-</div>
+                    <div class="stat-label">Usuarios</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-books">-</div>
+                    <div class="stat-label">Libros</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-purchases">-</div>
+                    <div class="stat-label">Compras</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-rentals">-</div>
+                    <div class="stat-label">Alquileres</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-size">-</div>
+                    <div class="stat-label">Tamaño de BiblionDB</div>
+                </div>
+            </div>
+
+            <h2>👥 Usuarios</h2>
+            <div id="users-list">
+                <p>Cargando usuarios...</p>
+            </div>
+
+            <h2 style="margin-top: 2rem;">📚 Todos los Libros</h2>
+            <div id="admin-books-list">
+                <p>Cargando libros...</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        function showMessage(message, type) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => { container.innerHTML = ''; }, 3000);
+        }
+
+        async function checkDbStatus() {
+            const bar = document.getElementById('db-status-bar');
+            const text = document.getElementById('db-status-text');
+            try {
+                const status = await window.BiblionAPI.getDbStatus();
+                if (status.connected) {
+                    bar.className = 'db-status-bar ok';
+                    text.innerHTML = `✅ Base de datos conectada — <span class="db-status-detail">${status.server} / ${status.database} · ${status.latencyMs}ms</span>`;
+                } else {
+                    bar.className = 'db-status-bar fail';
+                    text.innerHTML = `❌ Sin conexión a la base de datos — <span class="db-status-detail">${status.error}</span>`;
+                }
+            } catch (error) {
+                // Even the request itself failed (backend down, not just the DB)
+                bar.className = 'db-status-bar fail';
+                text.textContent = '❌ No se pudo contactar al servidor: ' + error.message;
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const stats = await window.BiblionAPI.getAdminStats();
+                document.getElementById('stat-users').textContent = stats.users;
+                document.getElementById('stat-books').textContent = stats.books;
+                document.getElementById('stat-purchases').textContent = stats.purchases;
+                document.getElementById('stat-rentals').textContent = stats.rentals;
+                document.getElementById('stat-size').textContent = stats.dbSizeMb + ' MB';
+            } catch (error) {
+                showMessage('Error al cargar estadísticas: ' + error.message, 'error');
+            }
+        }
+
+        async function renderUsers() {
+            try {
+                const users = await window.BiblionAPI.getAdminUsers();
+                const container = document.getElementById('users-list');
+
+                if (users.length === 0) {
+                    container.innerHTML = '<p>No hay usuarios registrados.</p>';
+                    return;
+                }
+
+                let html = `
+                    <table class="books-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Correo</th>
+                                <th>Matrícula</th>
+                                <th>Rol</th>
+                                <th>Registrado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                users.forEach(user => {
+                    html += `
+                        <tr>
+                            <td>${user.name}</td>
+                            <td>${user.email}</td>
+                            <td>${user.matricula || ''}</td>
+                            <td>${user.role === 'admin' ? '🛡️ Admin' : 'Usuario'}</td>
+                            <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                            <td>
+                                ${user.role === 'admin'
+                                    ? '<span style="color:#999;">No se puede eliminar</span>'
+                                    : `<button class="btn-delete" onclick="handleDeleteUser('${user.id}')">Eliminar</button>`}
+                            </td>
+                        </tr>
+                    `;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                showMessage('Error al cargar usuarios: ' + error.message, 'error');
+            }
+        }
+
+        async function renderBooks() {
+            try {
+                const books = await window.BiblionAPI.getAllBooks();
+                const container = document.getElementById('admin-books-list');
+
+                if (books.length === 0) {
+                    container.innerHTML = '<p>No hay libros publicados.</p>';
+                    return;
+                }
+
+                let html = `
+                    <table class="books-table">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Autor</th>
+                                <th>Categoría</th>
+                                <th>Precio</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                books.forEach(book => {
+                    const priceText = book.isFree ? 'Gratis' : '$' + book.price;
+                    html += `
+                        <tr>
+                            <td>${book.title}</td>
+                            <td>${book.author}</td>
+                            <td>${book.categoria}</td>
+                            <td>${priceText}</td>
+                            <td>
+                                <a href="book.html?id=${book.id}" class="btn-view">Ver</a>
+                                <button class="btn-delete" onclick="handleDeleteBook('${book.id}')">Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                showMessage('Error al cargar libros: ' + error.message, 'error');
+            }
+        }
+
+        function refreshAll() {
+            checkDbStatus();
+            loadStats();
+            renderUsers();
+            renderBooks();
+        }
+
+        window.handleDeleteUser = async function (userId) {
+            if (!confirm('¿Eliminar este usuario? También se eliminarán sus libros publicados.')) return;
+            try {
+                await window.BiblionAPI.deleteUserAdmin(userId);
+                showMessage('Usuario eliminado correctamente', 'success');
+                refreshAll();
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            }
+        };
+
+        window.handleDeleteBook = async function (bookId) {
+            if (!confirm('¿Eliminar este libro?')) return;
+            try {
+                await window.BiblionAPI.deleteBook(bookId);
+                showMessage('Libro eliminado correctamente', 'success');
+                refreshAll();
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            }
+        };
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            window.BiblionAPI.logout();
+            window.location.href = 'index.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = window.BiblionAPI.getCurrentUser();
+            if (!user || !window.BiblionAPI.getToken()) {
+                window.location.href = 'login.html';
+                return;
+            }
+            if (!window.BiblionAPI.isAdmin()) {
+                alert('No tienes permisos de administrador.');
+                window.location.href = 'mis-libros.html';
+                return;
+            }
+            refreshAll();
+            setInterval(checkDbStatus, 15000);
+        });
+    </script>
+</body>
+</html>

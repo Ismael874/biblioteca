@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblion - Biblioteca Digital</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .welcome-container {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+        .welcome-card {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-hover);
+            max-width: 800px;
+        }
+        .welcome-card h1 {
+            color: var(--primary-color);
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .welcome-card p {
+            color: #666;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        .welcome-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+        .btn-guest {
+            background: var(--secondary-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .btn-guest:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(52,152,219,0.4);
+        }
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        .stat-label {
+            color: #666;
+            font-size: 1rem;
+        }
+        .features {
+            padding: 4rem 2rem;
+            background: #f8f9fa;
+        }
+        .features h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 3rem;
+            font-size: 2.5rem;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .feature-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        .feature-card p {
+            color: #666;
+        }
+        .btn-primary, .btn-secondary {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="index.html" class="nav-logo">Biblion</a>
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link active">Inicio</a></li>
+                    <li><a href="login.html" class="nav-link">Iniciar Sesión</a></li>
+                    <li><a href="register.html" class="nav-link">Registrarse</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="welcome-container">
+            <div class="welcome-card">
+                <h1>📚 Bienvenido a Biblion</h1>
+                <p>Tu biblioteca digital personal</p>
+                <p>Accede a miles de libros en formato PDF, descubre nuevos autores y gestiona tu propia colección digital. Todo en un solo lugar.</p>
+                
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-number">+1000</span>
+                        <span class="stat-label">Libros Disponibles</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">+500</span>
+                        <span class="stat-label">Autores</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">+50</span>
+                        <span class="stat-label">Categorías</span>
+                    </div>
+                </div>
+
+                <div class="welcome-buttons">
+                    <a href="login.html" class="btn btn-primary">Iniciar Sesión</a>
+                    <a href="register.html" class="btn btn-secondary">Registrarse</a>
+                    <a href="invitado.html" class="btn-guest">Entrar como Invitado</a>
+                </div>
+            </div>
+        </div>
+
+        <section class="features">
+            <h2>¿Qué puedes hacer en Biblion?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <h3>Explorar Libros</h3>
+                    <p>Busca y descubre miles de libros en una galería de libros online. Filtra por categoría, autor o título.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">⬇️</div>
+                    <h3>Descargar PDFs</h3>
+                    <p>Accede a los libros en formato PDF para leer sin conexión. Lleva tu biblioteca a todas partes.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📤</div>
+                    <h3>Compartir Conocimiento</h3>
+                    <p>Contribuye añadiendo nuevos libros a la biblioteca. Ayuda a otros lectores a descubrir nuevas obras.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Biblion - Biblioteca Digital. Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>
